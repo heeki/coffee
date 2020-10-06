@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee APIGW custom domain name
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+Parameters:
+  certificateArn:
+    Type: String
+  domainName:
+    Type: String
+  hostedZoneId:
+    Type: String
+Resources:
+  ExampleApiDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Ref domainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref certificateArn
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+  ExampleApiDomainRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref hostedZoneId
+      Name: !Ref domainName
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt ExampleApiDomain.RegionalHostedZoneId
+        DNSName: !GetAtt ExampleApiDomain.RegionalDomainName
+Outputs:
+  apiDomain:
+    Value: !Ref ExampleApiDomain
+  apiDomainRecordSet:
+    Value: !Ref ExampleApiDomainRecordSet

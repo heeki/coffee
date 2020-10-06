@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee ACM certificate
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  domainName:
+    Type: String
+  hostedZoneId:
+    Type: String
+Resources:
+  ExampleCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref domainName
+      DomainValidationOptions:
+        - DomainName: !Ref domainName
+          HostedZoneId: !Ref hostedZoneId
+Outputs:
+  certificateArn:
+    Value: !Ref ExampleCertificate

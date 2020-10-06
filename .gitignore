@@ -1,0 +1,9 @@
+# sam output files
+*/iac/*_output.yaml
+
+# configuration files
+*/etc/*.json
+*/var/*.txt
+
+# miscellaneous
+notes.md
