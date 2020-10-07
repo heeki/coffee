@@ -22,7 +22,7 @@ Parameters:
     Type: String
 Resources:
   # APIGW
-  ExampleApi:
+  Api:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref apiStage
@@ -31,18 +31,30 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
-  ExampleApiMapping:
+  ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
-      ApiId: !Ref ExampleApi
+      ApiId: !Ref Api
       ApiMappingKey: customer
       DomainName: !Ref domainName
       Stage: !Ref apiStage
     DependsOn:
-      - ExampleApiStage
+      - ApiStage
+
+  # DynamoDB
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
 
   # Lambda
-  ExampleExecRole:
+  ExecRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -67,26 +79,28 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:*'
-  ExampleFn:
+  Fn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../src
-      Handler: example.handler
-      Role: !GetAtt ExampleExecRole.Arn
-  ExampleLogGroupFn:
+      Handler: customer.handler
+      Role: !GetAtt ExecRole.Arn
+  LogGroupFn:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${ExampleFn}"
+      LogGroupName: !Sub "/aws/lambda/${Fn}"
       RetentionInDays: 7
-  ExamplePermFn:
+  PermFn:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt ExampleFn.Arn
+      FunctionName: !GetAtt Fn.Arn
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ExampleApi}/*/*/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
 Outputs:
-  exampleApi:
-    Value: !Ref ExampleApi
-  exampleFn:
-    Value: !Ref ExampleFn
+  outApi:
+    Value: !Ref Api
+  outTable:
+    Value: !Ref Table
+  outFn:
+    Value: !Ref Fn
