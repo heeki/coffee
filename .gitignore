@@ -3,7 +3,13 @@
 
 # configuration files
 */etc/*.json
+*/etc/*.sh
 */var/*.txt
 
 # miscellaneous
 notes.md
+
+# temp
+*/src/*.pyc
+*/tmp/*
+

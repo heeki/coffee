@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee API for Customers
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+  Function:
+    Runtime: python3.8
+    Timeout: 60
+Parameters:
+  certificateArn:
+    Type: String
+  domainName:
+    Type: String
+  hostedZoneId:
+    Type: String
+  apiStage:
+    Type: String
+  swaggerBucket:
+    Type: String
+  swaggerKey:
+    Type: String
+Resources:
+  # APIGW
+  ExampleApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref apiStage
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+  ExampleApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref ExampleApi
+      ApiMappingKey: customer
+      DomainName: !Ref domainName
+      Stage: !Ref apiStage
+
+  # Lambda
+  ExampleExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: 'arn:aws:logs:*:*:*'
+  ExampleFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: example.handler
+      Role: !GetAtt ExampleExecRole.Arn
+  ExampleLogGroupFn:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ExampleFn}"
+      RetentionInDays: 7
+  ExamplePermFn:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ExampleFn.Arn
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ExampleApi}/*/*/*'
+Outputs:
+  OutExampleApi:
+    Value: !Ref ExampleApi
+  OutExampleFn:
+    Value: !Ref ExampleFn

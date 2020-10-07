@@ -1,7 +1,0 @@
-# configuration
-etc/*
-
-# temp
-src/*.pyc
-tmp/*
-
