@@ -12,7 +12,7 @@ Parameters:
   hostedZoneId:
     Type: String
 Resources:
-  ExampleApiDomain:
+  ApiDomain:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !Ref domainName
@@ -20,17 +20,17 @@ Resources:
         - CertificateArn: !Ref certificateArn
           EndpointType: REGIONAL
           SecurityPolicy: TLS_1_2
-  ExampleApiDomainRecordSet:
+  ApiDomainRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref hostedZoneId
       Name: !Ref domainName
       Type: A
       AliasTarget:
-        HostedZoneId: !GetAtt ExampleApiDomain.RegionalHostedZoneId
-        DNSName: !GetAtt ExampleApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt ApiDomain.RegionalHostedZoneId
+        DNSName: !GetAtt ApiDomain.RegionalDomainName
 Outputs:
   apiDomain:
-    Value: !Ref ExampleApiDomain
+    Value: !Ref ApiDomain
   apiDomainRecordSet:
-    Value: !Ref ExampleApiDomainRecordSet
+    Value: !Ref ApiDomainRecordSet

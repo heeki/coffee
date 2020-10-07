@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Unicorn Coffee API for Customers
+Description: Unicorn Coffee APIGW for X
 Transform: AWS::Serverless-2016-10-31
 Globals:
   Api:

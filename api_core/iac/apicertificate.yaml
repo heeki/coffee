@@ -7,7 +7,7 @@ Parameters:
   hostedZoneId:
     Type: String
 Resources:
-  ExampleCertificate:
+  Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Ref domainName
@@ -16,4 +16,4 @@ Resources:
           HostedZoneId: !Ref hostedZoneId
 Outputs:
   certificateArn:
-    Value: !Ref ExampleCertificate
+    Value: !Ref Certificate
