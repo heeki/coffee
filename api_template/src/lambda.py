@@ -3,7 +3,6 @@ import json
 import os
 from lib.response import success, failure
 
-
 # function: initialization
 def initialization():
     pass
@@ -21,7 +20,6 @@ def handler(event, context):
     # }
     output = success(json.dumps(payload)) if status == 200 else failure(json.dumps(payload))
     return output
-
 
 # initialization, mapping
 initialization()

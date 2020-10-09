@@ -46,15 +46,26 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
+        - AttributeName: uid
+          AttributeType: S
         - AttributeName: email
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: email
+        - AttributeName: uid
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: lu_email
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+            - AttributeName: uid
+              KeyType: RANGE
+          Projection:
+            ProjectionType: KEYS_ONLY
 
   # Lambda
-  ExecRole:
+  FnExecRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -79,18 +90,44 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:*'
+        - PolicyName: dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt Table.Arn
+        - PolicyName: dynamodb-indexes
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource: !Join [ "/", [ !GetAtt Table.Arn, "index", "*" ] ]
   Fn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../src
-      Handler: customer.handler
-      Role: !GetAtt ExecRole.Arn
-  LogGroupFn:
+      Handler: lambda.handler
+      Role: !GetAtt FnExecRole.Arn
+      Environment:
+        Variables:
+          TABLE: !Ref Table
+  FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${Fn}"
       RetentionInDays: 7
-  PermFn:
+  FnPerm:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt Fn.Arn

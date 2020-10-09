@@ -71,7 +71,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../src
-      Handler: example.handler
+      Handler: lambda.handler
       Role: !GetAtt ExampleExecRole.Arn
   ExampleLogGroupFn:
     Type: AWS::Logs::LogGroup

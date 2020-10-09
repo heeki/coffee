@@ -45,14 +45,8 @@ components:
           type: string
   responses:
     error:
-      description: internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/error'
-          example:
-            code: 500
-            message: 'unable to retrieve message'
+      description: error
+      statusCode: 500
 
 paths:
   /:
@@ -69,7 +63,11 @@ paths:
         500:
           $ref: '#/components/responses/error'
         default:
-          $ref: '#/components/responses/error'
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customers'
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
@@ -105,10 +103,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/customer'
-        500:
-          $ref: '#/components/responses/error'
         default:
-          $ref: '#/components/responses/error'
+          description: error
+          statusCode: 500
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
