@@ -48,6 +48,23 @@ class Customer:
     def set_phone_number_verified(self, value):
         self.phone_number_verified = value
 
+    def get_all(self):
+        response = self.ddb.scan(
+            TableName = self.table,
+            IndexName = "lu_email",
+            Limit = 100
+        )
+        output = {
+            "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
+            "ResponseBody": []
+        }
+        for item in response["Items"]:
+            output["ResponseBody"].append({
+                "email": item["email"]["S"],
+                "uid": item["uid"]["S"]
+            })
+        return output
+
     def exists(self, email):
         response = self.ddb.query(
             TableName = self.table,
@@ -77,15 +94,19 @@ class Customer:
                     "phone_number_verified": { "BOOL": self.phone_number_verified }
                 }
             )
+            output = {
+                "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
+                "ResponseBody": self.__repr__()
+            }
         else:
-            response = {
-                "ResponseMetadata": {
+            output = {
+                "HTTPStatusCode": 500,
+                "ResponseBody": {
                     "ErrorMessage": "Email already exists",
                     "ErrorType": "InputError",
-                    "HTTPStatusCode": 500
                 }
             }
-        return response
+        return output
 
     def update(self, uid):
         self.uid = uid
