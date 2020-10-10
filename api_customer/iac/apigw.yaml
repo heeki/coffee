@@ -89,7 +89,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
-                Resource: 'arn:aws:logs:*:*:*'
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
         - PolicyName: dynamodb
           PolicyDocument:
             Version: '2012-10-17'
@@ -122,6 +122,8 @@ Resources:
       Environment:
         Variables:
           TABLE: !Ref Table
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
   FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

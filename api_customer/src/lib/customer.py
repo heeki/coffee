@@ -84,7 +84,6 @@ class Customer:
                     "ErrorType": "InputError",
                     "HTTPStatusCode": 500
                 }
-
             }
         return response
 
