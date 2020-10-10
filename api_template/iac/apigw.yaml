@@ -66,13 +66,15 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
-                Resource: 'arn:aws:logs:*:*:*'
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
   ExampleFn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../src
       Handler: lambda.handler
       Role: !GetAtt ExampleExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
   ExampleLogGroupFn:
     Type: AWS::Logs::LogGroup
     Properties:

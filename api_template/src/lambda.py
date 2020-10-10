@@ -1,11 +1,30 @@
 import boto3
 import json
 import os
-from lib.response import success, failure
+
+
+# helper functions
+def build_response(code, body):
+    # headers for cors
+    headers = {
+        "Access-Control-Allow-Origin": "amazonaws.com",
+        "Access-Control-Allow-Credentials": True
+    }
+
+    # lambda proxy integration
+    response = {
+        'isBase64Encoded': False,
+        'statusCode': code,
+        'headers': headers,
+        'body': body
+    }
+    return response
+
 
 # function: initialization
 def initialization():
     pass
+
 
 # function: lambda invoker handler
 def handler(event, context):
@@ -18,8 +37,9 @@ def handler(event, context):
     #     "requestContext.path": event["requestContext"]["path"],
     #     "requestContext.resourcePath": event["requestContext"]["resourcePath"]
     # }
-    output = success(json.dumps(payload)) if status == 200 else failure(json.dumps(payload))
+    output = build_response(status, json.dumps(payload))
     return output
+
 
 # initialization, mapping
 initialization()
