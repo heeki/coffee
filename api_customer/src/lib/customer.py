@@ -130,21 +130,40 @@ class Customer:
             }
         return output
 
+    def generate_ddb_update_expr(self):
+        update_expr = ["set "]
+        for k in self.__repr__():
+            if (k != "uid"):
+                update_expr.append(f"{k}=:{k}, ")
+        final_expr = "".join(update_expr)
+        return final_expr[:-2]
+
+    def generate_ddb_expr_vals(self):
+        return {
+            ":given_name": { "S": self.given_name },
+            ":family_name": { "S": self.family_name },
+            ":birthdate": { "S": self.birthdate },
+            ":email": { "S": self.email },
+            ":phone_number": { "S": self.phone_number },
+            ":phone_number_verified": { "BOOL": self.phone_number_verified }
+        }
+
     def update(self, uid):
         self.uid = uid
-        update_expr = ["set "]
-        update_vals = {}
-        for k, v in self.__repr__():
-            update_expr.append(f"{k} = :{k},")
-            update_vals[f":{k}"] = v
-        print("".join(update_expr[:-1]))
-        print(dict(update_vals))
+        update_expr = self.generate_ddb_update_expr()
+        update_vals = self.generate_ddb_expr_vals()
+        print(json.dumps(update_expr))
+        print(json.dumps(update_vals))
         response = self.ddb.update_item(
             TableName = self.table,
             Key = {
                 "uid": { "S": self.uid }
             },
-            UpdateExpression = "".join(update_expr[:-1]),
-            ExpressionAttributeValues = dict(update_vals)
+            UpdateExpression = update_expr,
+            ExpressionAttributeValues = update_vals
         )
-        return response
+        output = {
+            "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
+            "ResponseBody": response["ResponseMetadata"]["RequestId"]
+        }
+        return output
