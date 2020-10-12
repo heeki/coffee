@@ -29,11 +29,10 @@ def handler(event, context):
     print(json.dumps(event))
     method = event["requestContext"]["http"]["method"] 
     uid = event["pathParameters"]["proxy"].rstrip('/')
+    print({"uid": uid})
 
     if method == "GET":
-        response = customer.get_uid(uid)
-        status = response["HTTPStatusCode"]
-        output = build_response(status, json.dumps(response["ResponseBody"]))
+        response = customer.get(uid)
 
     elif method == "POST":
         # TODO: need to implement request body validation
@@ -55,9 +54,13 @@ def handler(event, context):
                     "ErrorType": "InputError"
                 }
             }
-        status = response["HTTPStatusCode"]
-        payload = str(customer) if status == 200 else json.dumps(response["ResponseBody"])
-        output = build_response(status, payload)
+
+    elif method == "DELETE":
+        response = customer.delete(uid)
+
+    status = response["HTTPStatusCode"]
+    payload = str(customer) if status == 200 else json.dumps(response["ResponseBody"])
+    output = build_response(status, payload)
 
     print(output)
     return output

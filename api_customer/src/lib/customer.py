@@ -65,7 +65,7 @@ class Customer:
             })
         return output
 
-    def get_uid(self, uid):
+    def get(self, uid):
         response = self.ddb.get_item(
             TableName = self.table,
             Key = {
@@ -165,5 +165,27 @@ class Customer:
         output = {
             "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
             "ResponseBody": response["ResponseMetadata"]["RequestId"]
+        }
+        return output
+
+    def delete(self, uid):
+        response = self.ddb.delete_item(
+            TableName = self.table,
+            Key = {
+                "uid": { "S": uid }
+            },
+            ReturnValues = "ALL_OLD"
+        )
+        print(json.dumps(response))
+        self.set_uid(uid)
+        self.set_given_name(response["Attributes"]["given_name"]["S"])
+        self.set_family_name(response["Attributes"]["family_name"]["S"])
+        self.set_birthdate(response["Attributes"]["birthdate"]["S"])
+        self.set_email(response["Attributes"]["email"]["S"])
+        self.set_phone_number(response["Attributes"]["phone_number"]["S"])
+        self.set_phone_number_verified(response["Attributes"]["phone_number_verified"]["BOOL"])
+        output = {
+            "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
+            "ResponseBody": self.__repr__()
         }
         return output
