@@ -65,6 +65,28 @@ class Customer:
             })
         return output
 
+    def get_uid(self, uid):
+        response = self.ddb.get_item(
+            TableName = self.table,
+            Key = {
+                "uid": {
+                    "S": uid
+                }
+            }
+        )
+        self.set_uid(uid)
+        self.set_given_name(response["Item"]["given_name"]["S"])
+        self.set_family_name(response["Item"]["family_name"]["S"])
+        self.set_birthdate(response["Item"]["birthdate"]["S"])
+        self.set_email(response["Item"]["email"]["S"])
+        self.set_phone_number(response["Item"]["phone_number"]["S"])
+        self.set_phone_number_verified(response["Item"]["phone_number_verified"]["BOOL"])
+        output = {
+            "HTTPStatusCode": response["ResponseMetadata"]["HTTPStatusCode"],
+            "ResponseBody": self.__repr__()
+        }
+        return output
+
     def exists(self, email):
         response = self.ddb.query(
             TableName = self.table,

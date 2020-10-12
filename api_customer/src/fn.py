@@ -20,6 +20,7 @@ def build_response(code, body):
         'headers': headers,
         'body': body
     }
+
     return response
 
 
@@ -32,6 +33,7 @@ def handler(event, context):
         response = customer.get_all()
         status = response["HTTPStatusCode"]
         output = build_response(status, json.dumps(response["ResponseBody"]))
+    
     elif method == "POST":
         # TODO: need to implement request body validation
         if "body" in event:

@@ -115,7 +115,7 @@ paths:
         type: AWS_PROXY
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
-  /{uid}:
+  /{proxy+}:
     get:
       summary: customer
       description: returns customer details
@@ -145,7 +145,7 @@ paths:
             statusCode: 200
         type: AWS_PROXY
         uri:
-          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'
     post:
       summary: customer
       description: update customer
@@ -191,7 +191,7 @@ paths:
             statusCode: 200
         type: AWS_PROXY
         uri:
-          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'
     delete:
       summary: customer
       description: deletes customer
@@ -217,4 +217,4 @@ paths:
             statusCode: 200
         type: AWS_PROXY
         uri:
-          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'
