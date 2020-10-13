@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee EventBridge
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Runtime: python3.8
+    Timeout: 60
+Parameters:
+  busName:
+    Type: String
+Resources:
+  # EventBridge
+  Bus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref busName
+  Rule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: !Ref Bus
+      EventPattern:
+        source:
+          - heeki.custom
+      State: ENABLED
+      Targets:
+        - Id: lambda
+          Arn: !GetAtt Fn.Arn
+
+  # Lambda
+  FnExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
+  Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Fn}"
+      RetentionInDays: 7
+  FnPerm:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Fn.Arn
+      Principal: events.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt Rule.Arn
+
+Outputs:
+  outBus:
+    Value: !GetAtt Bus.Arn
