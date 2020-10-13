@@ -1,0 +1,278 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee EventBridge
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Runtime: python3.8
+    Timeout: 60
+Parameters:
+  busName:
+    Type: String
+  aslBucket:
+    Type: String
+  aslKey:
+    Type: String
+Resources:
+  # Step Function
+  SFnExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: "*"
+        - PolicyName: lambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt Fn.Arn
+                  - !GetAtt FnRecord.Arn
+                  - !GetAtt FnInvoiceCreate.Arn
+                  - !GetAtt FnInvoiceSend.Arn
+                  - !GetAtt FnUsageCalc.Arn
+                  - !GetAtt FnUsageMaint.Arn
+                  - !GetAtt FnUsageOk.Arn                  
+  SFn:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+        DefinitionS3Location:
+          Bucket: !Ref aslBucket
+          Key: !Ref aslKey
+        DefinitionSubstitutions:
+          FnRecord: !GetAtt FnRecord.Arn
+          FnInvoiceCreate: !GetAtt FnInvoiceCreate.Arn
+          FnInvoiceSend: !GetAtt FnInvoiceSend.Arn
+          FnUsageCalc: !GetAtt FnUsageCalc.Arn
+          FnUsageMaint: !GetAtt FnUsageMaint.Arn
+          FnUsageOk: !GetAtt FnUsageOk.Arn
+        LoggingConfiguration:
+          Destinations:
+            - CloudWatchLogsLogGroup:
+                LogGroupArn: !GetAtt SFnLogGroup.Arn
+          IncludeExecutionData: true
+          Level: ALL
+        RoleArn: !GetAtt SFnExecRole.Arn
+        StateMachineType: STANDARD
+        TracingConfiguration:
+          Enabled: false
+  SFnLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/sf/unicorn-sf-consumption"
+      RetentionInDays: 7
+
+  # Lambda
+  FnExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
+  # Fn
+  Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Fn}"
+      RetentionInDays: 7
+  # FnPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt Fn.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnRecord
+  FnRecord:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_record.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnRecordLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnRecord}"
+      RetentionInDays: 7
+  # FnRecordPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnRecord.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnInvoiceCreate
+  FnInvoiceCreate:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_invoice_create.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnInvoiceCreateLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnInvoiceCreate}"
+      RetentionInDays: 7
+  # FnInvoiceCreatePerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnInvoiceCreate.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnInvoiceSend
+  FnInvoiceSend:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_invoice_send.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnInvoiceSendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnInvoiceSend}"
+      RetentionInDays: 7
+  # FnInvoiceSendPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnInvoiceSend.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnUsageCalc
+  FnUsageCalc:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_usage_calc.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnUsageCalcLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnUsageCalc}"
+      RetentionInDays: 7
+  # FnUsageCalcPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnUsageCalc.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnUsageMaint
+  FnUsageMaint:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_usage_maint.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnUsageMaintLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnUsageMaint}"
+      RetentionInDays: 7
+  # FnUsageMaintPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnUsageMaint.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+  # FnUsageOk
+  FnUsageOk:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_usage_ok.handler
+      Role: !GetAtt FnExecRole.Arn
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+  FnUsageOkLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnUsageOk}"
+      RetentionInDays: 7
+  # FnUsageOkPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt FnUsageOk.Arn
+  #     Principal: states.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !GetAtt SFn.Arn
+
+Outputs:
+  outSFn:
+    Value: !GetAtt SFn.Arn
+  outFnRecord:
+    Value: !GetAtt FnRecord.Arn
+  outFnInvoiceCreate:
+    Value: !GetAtt FnInvoiceCreate.Arn
+  outFnInvoiceSend:
+    Value: !GetAtt FnInvoiceSend.Arn
+  outFnUsageCalc:
+    Value: !GetAtt FnUsageCalc.Arn
+  outFnUsageMaint:
+    Value: !GetAtt FnUsageMaint.Arn
+  outFnUsageOk:
+    Value: !GetAtt FnUsageOk.Arn

@@ -1,0 +1,66 @@
+{
+    "StartAt": "Record",
+    "States": {
+        "Record": {
+            "Type": "Task",
+            "Resource": "${FnRecord}",
+            "Next": "Processing"
+        },
+        "Processing": {
+            "Type": "Parallel",
+            "End": true,
+            "Branches": [
+                {
+                    "StartAt": "InvoiceCreate",
+                    "States": {
+                        "InvoiceCreate": {
+                            "Type": "Task",
+                            "Resource": "${FnInvoiceCreate}",
+                            "Next": "InvoiceSend"
+                        },
+                        "InvoiceSend": {
+                            "Type": "Task",
+                            "Resource": "${FnInvoiceSend}",
+                            "End": true
+                        }
+                    }
+                },
+                {
+                    "StartAt": "UsageCalc",
+                    "States": {
+                        "UsageCalc": {
+                            "Type": "Task",
+                            "Resource": "${FnUsageCalc}",
+                            "Next": "UsageChoice"
+                        },
+                        "UsageChoice": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.threshold",
+                                    "StringEquals": "exceeded",
+                                    "Next": "UsageMaint"
+                                },
+                                {
+                                    "Variable": "$.threshold",
+                                    "StringEquals": "normal",
+                                    "Next": "UsageOk"
+                                }
+                            ]
+                        },
+                        "UsageMaint": {
+                            "Type": "Task",
+                            "Resource": "${FnUsageMaint}",
+                            "End": true
+                        },
+                        "UsageOk": {
+                            "Type": "Task",
+                            "Resource": "${FnUsageOk}",
+                            "End": true
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
