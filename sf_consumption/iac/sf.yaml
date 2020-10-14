@@ -127,13 +127,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${Fn}"
       RetentionInDays: 7
-  # FnPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt Fn.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnRecord
   FnRecord:
     Type: AWS::Serverless::Function
@@ -148,13 +141,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnRecord}"
       RetentionInDays: 7
-  # FnRecordPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnRecord.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnInvoiceCreate
   FnInvoiceCreate:
     Type: AWS::Serverless::Function
@@ -169,13 +155,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnInvoiceCreate}"
       RetentionInDays: 7
-  # FnInvoiceCreatePerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnInvoiceCreate.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnInvoiceSend
   FnInvoiceSend:
     Type: AWS::Serverless::Function
@@ -190,13 +169,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnInvoiceSend}"
       RetentionInDays: 7
-  # FnInvoiceSendPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnInvoiceSend.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnUsageCalc
   FnUsageCalc:
     Type: AWS::Serverless::Function
@@ -211,13 +183,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnUsageCalc}"
       RetentionInDays: 7
-  # FnUsageCalcPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnUsageCalc.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnUsageMaint
   FnUsageMaint:
     Type: AWS::Serverless::Function
@@ -232,13 +197,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnUsageMaint}"
       RetentionInDays: 7
-  # FnUsageMaintPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnUsageMaint.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
   # FnUsageOk
   FnUsageOk:
     Type: AWS::Serverless::Function
@@ -253,14 +211,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnUsageOk}"
       RetentionInDays: 7
-  # FnUsageOkPerm:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !GetAtt FnUsageOk.Arn
-  #     Principal: states.amazonaws.com
-  #     Action: lambda:InvokeFunction
-  #     SourceArn: !GetAtt SFn.Arn
-
 Outputs:
   outSFn:
     Value: !GetAtt SFn.Arn

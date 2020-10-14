@@ -1,4 +1,5 @@
 include etc/execute_env.sh
+PARAMS="ParameterKey=busName,ParameterValue=${P_NAME} ParameterKey=sfnConsumption,ParameterValue=${P_SF} "
 
 sam: sam.package sam.deploy
 

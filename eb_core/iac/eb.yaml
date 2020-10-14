@@ -8,23 +8,59 @@ Globals:
 Parameters:
   busName:
     Type: String
+  sfnConsumption:
+    Type: String
 Resources:
   # EventBridge
   Bus:
     Type: AWS::Events::EventBus
     Properties:
       Name: !Ref busName
-  Rule:
+  Rule1:
     Type: AWS::Events::Rule
     Properties:
       EventBusName: !Ref Bus
       EventPattern:
         source:
-          - heeki.custom
+          - heeki.generator
       State: ENABLED
       Targets:
         - Id: lambda
           Arn: !GetAtt Fn.Arn
+  Rule2ExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource: !Ref sfnConsumption
+  Rule2:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: !Ref Bus
+      EventPattern:
+        source:
+          - heeki.iot
+      State: ENABLED
+      Targets:
+        - Id: sf-consumption
+          Arn: !Ref sfnConsumption
+          RoleArn: !GetAtt Rule2ExecRole.Arn
 
   # Lambda
   FnExecRole:
@@ -71,7 +107,7 @@ Resources:
       FunctionName: !GetAtt Fn.Arn
       Principal: events.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !GetAtt Rule.Arn
+      SourceArn: !GetAtt Rule1.Arn
 
 Outputs:
   outBus:
