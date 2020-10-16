@@ -22,6 +22,12 @@ lambda.invoke:
 	aws --profile ${PROFILE} lambda invoke --function-name ${FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
 
+eb.generator.fn:
+	python3 util/generator.py --bus coffee --source heeki.generator --payload etc/event.json --count 1 | jq
+
+eb.generator.sf:
+	python3 util/generator.py --bus coffee --source heeki.iot --payload etc/event.json --count 1 | jq
+
 test:
 	echo $$(eval shasum -a 256 iac/swagger.yaml | awk '{print $$1}')
 
