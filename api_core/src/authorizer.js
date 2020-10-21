@@ -7,26 +7,26 @@
 // Note that token values are case-sensitive.
 
 exports.handler =  function(event, context, callback) {
-    var token = event.authorizationToken;
+    console.log(JSON.stringify(event));
+    var token = event.headers.authorization;
+    var context = {};
+    context.token = token;
     switch (token) {
         case 'allow':
-            callback(null, generatePolicy('user', 'Allow', event.methodArn));
+            callback(null, generatePolicy('user', 'Allow', event.routeArn, context));
             break;
         case 'deny':
-            callback(null, generatePolicy('user', 'Deny', event.methodArn));
-            break;
-        case 'unauthorized':
-            callback("Unauthorized");   // Return a 401 Unauthorized response
+            context.reason = 'deny';
+            callback(null, generatePolicy('user', 'Deny', event.routeArn, context));
             break;
         default:
-            callback("Error: Invalid token"); // Return a 500 Invalid token response
+            context.reason = 'invalid';
+            callback(null, generatePolicy('user', 'Deny', event.routeArn, context));
     }
 };
 
-// Help function to generate an IAM policy
-var generatePolicy = function(principalId, effect, resource) {
+var generatePolicy = function(principalId, effect, resource, context) {
     var authResponse = {};
-    
     authResponse.principalId = principalId;
     if (effect && resource) {
         var policyDocument = {};
@@ -39,12 +39,7 @@ var generatePolicy = function(principalId, effect, resource) {
         policyDocument.Statement[0] = statementOne;
         authResponse.policyDocument = policyDocument;
     }
-    
-    // Optional output with custom properties of the String, Number or Boolean type.
-    authResponse.context = {
-        "stringKey": "stringval",
-        "numberKey": 123,
-        "booleanKey": true
-    };
+    authResponse.context = context;
+    console.log(JSON.stringify(authResponse));
     return authResponse;
 }

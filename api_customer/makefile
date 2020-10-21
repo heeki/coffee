@@ -1,6 +1,4 @@
 include etc/execute_env.sh
-$(eval P_SWAGGER_KEY=$(shell shasum -a 256 iac/swagger.yaml | awk '{print $$1}'))
-PARAMS="ParameterKey=certificateArn,ParameterValue=${P_CERTARN} ParameterKey=domainName,ParameterValue=${P_DOMAINNAME} ParameterKey=hostedZoneId,ParameterValue=${P_ZONEID} ParameterKey=apiStage,ParameterValue=${P_STAGE} ParameterKey=swaggerBucket,ParameterValue=${P_SWAGGER_BUCKET} ParameterKey=swaggerKey,ParameterValue=${P_SWAGGER_KEY}"
 
 sam: sam.package sam.deploy
 

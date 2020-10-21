@@ -1,0 +1,22 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee Lambda Authorizer permissions
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  fnId:
+    Type: String
+  accountId:
+    Type: String
+  apiId:
+    Type: String
+  authorizerId:
+    Type: String
+Resources:
+  FnPerm:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref fnId
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      # SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${accountId}:${apiId}/*/*/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${accountId}:${apiId}/authorizers/${authorizerId}'

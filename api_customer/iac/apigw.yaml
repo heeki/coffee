@@ -16,6 +16,8 @@ Parameters:
     Type: String
   apiStage:
     Type: String
+  apiAuthorizer:
+    Type: String
   swaggerBucket:
     Type: String
   swaggerKey:
@@ -25,12 +27,21 @@ Resources:
   Api:
     Type: AWS::Serverless::HttpApi
     Properties:
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        # Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.routeKey $context.protocol" $context.status $context.responseLength $context.requestId'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/unicorn-api-customer"
+      RetentionInDays: 7
   ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
@@ -40,6 +51,22 @@ Resources:
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
+  ApiAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref Api
+      AuthorizerPayloadFormatVersion: 2.0
+      AuthorizerResultTtlInSeconds: 10
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
+      EnableSimpleResponses: false
+      IdentitySource:
+        - $request.header.Authorization
+      # JwtConfiguration:
+      #   Audience:
+      #     - example-clientid
+      #   Issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_example-poolid'
+      Name: unicorn-api-authorizer
 
   # DynamoDB
   Table:

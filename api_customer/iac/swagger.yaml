@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   title: unicorn-api-customer
   description: Unicorn Coffee API for Customers
@@ -8,6 +8,10 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 components:
+  responses:
+    error:
+      description: error
+      statusCode: 500
   schemas:
     error:
       type: object
@@ -33,7 +37,7 @@ components:
         phone_number:
           type: string
         phone_number_verified:
-          type: bool
+          type: boolean
     customers:
       type: array
       items:
@@ -43,10 +47,20 @@ components:
       properties:
         uid:
           type: string
-  responses:
-    error:
-      description: error
-      statusCode: 500
+  securitySchemes:
+    unicorn-api-authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        type: request
+        authorizeUri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
+        authorizerPayloadFormatVersion: 2.0
+        authorizerResultTtlInSeconds: 10
+        enableSimpleResponses: false
+        identitySource: $request.header.Authorization
 
 paths:
   /:
@@ -68,6 +82,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/customers'
+      security:
+        - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
@@ -106,6 +122,8 @@ paths:
         default:
           description: error
           statusCode: 500
+      security:
+        - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
@@ -137,6 +155,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           $ref: '#/components/responses/error'
+      security:
+        - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
@@ -183,6 +203,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           $ref: '#/components/responses/error'
+      security:
+        - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
@@ -209,6 +231,8 @@ paths:
           $ref: '#/components/responses/error'
         default:
           $ref: '#/components/responses/error'
+      security:
+        - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         payloadFormatVersion: 2.0
