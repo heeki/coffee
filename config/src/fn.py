@@ -24,12 +24,13 @@ def build_response(code, body):
 # function: lambda invoker handler
 def handler(event, context):
     print(json.dumps(event))
-    payload = {
-        "message": "hello world"
-    }
+    payload = json.loads(event["invokingEvent"])
+    print(json.dumps(payload))
     output = build_response(200, json.dumps(payload))
     print(output)
     return output
 
 
 # initialization, mapping
+# ALLOWED_RULE_PARAMETER_VALUES = ["REGIONAL", "PRIVATE", "EDGE"]
+ALLOWED_RULE_PARAMETER_VALUES = ["PRIVATE"]
