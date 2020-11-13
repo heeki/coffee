@@ -1,0 +1,61 @@
+openapi: 3.0.1
+info:
+  title: unicorn-api-order
+  description: Unicorn Coffee API for Orders
+  version: 0.1.0
+
+# components:
+#   securitySchemes:
+#     unicorn-api-authorizer:
+#       type: apiKey
+#       name: Authorization
+#       in: header
+#       x-amazon-apigateway-authorizer:
+#         type: request
+#         authorizeUri:
+#           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
+#         authorizerPayloadFormatVersion: 2.0
+#         authorizerResultTtlInSeconds: 10
+#         enableSimpleResponses: false
+#         identitySource: $request.header.Authorization
+
+paths:
+  /:
+    get:
+      summary: order
+      description: returns list of orders
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      # security:
+      #   - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    post:
+      summary: order
+      description: create order
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      # security:
+      #   - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'

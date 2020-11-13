@@ -52,7 +52,6 @@ components:
       type: apiKey
       name: Authorization
       in: header
-      x-amazon-apigateway-authtype: custom
       x-amazon-apigateway-authorizer:
         type: request
         authorizeUri:
