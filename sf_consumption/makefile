@@ -12,7 +12,7 @@ sam.package:
 	sam package -t iac/sf.yaml --output-template-file iac/sf_output.yaml --s3-bucket ${S3BUCKET}
 
 sam.deploy:
-	sam deploy -t iac/sf_output.yaml --stack-name unicorn-sf-consumption --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
+	sam deploy -t iac/sf_output.yaml --stack-name ${STACK} --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
 	sam local invoke -t iac/sf.yaml --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
