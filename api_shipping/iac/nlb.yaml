@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Unicorn Coffee NLB for private APIs
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  certArn:
+    Type: String
+  subnetIds:
+    Type: List<String>
+  endpointIps:
+    Type: List<String>
+  vpcId:
+    Type: String
+  zoneId:
+    Type: String
+  fqdnAlias:
+    Type: String
+Resources:
+  Facade:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internal
+      Subnets: !Ref subnetIds
+      Type: network
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref certArn
+      DefaultActions:
+        - Order: 1
+          TargetGroupArn: !Ref Targets
+          Type: forward
+      LoadBalancerArn: !Ref Facade
+      Port: 443
+      Protocol: TLS
+  Targets:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      # HealthCheckEnabled: true
+      # HealthCheckIntervalSeconds: 5
+      # HealthCheckPath: /
+      # HealthCheckPort: 443
+      # HealthCheckProtocol: TLS
+      # HealthCheckTimeoutSeconds: 5
+      # HealthyThresholdCount: 5
+      # UnhealthyThresholdCount: 3
+      # Matcher:
+      #   HttpCode: "200,403"
+      Port: 443
+      Protocol: TLS
+      Targets:
+        - Id: !Select [ 0, !Ref endpointIps ]
+          Port: 443
+        - Id: !Select [ 1, !Ref endpointIps ]
+          Port: 443
+        - Id: !Select [ 2, !Ref endpointIps ]
+          Port: 443
+        - Id: !Select [ 3, !Ref endpointIps ]
+          Port: 443
+      TargetType: ip
+      VpcId: !Ref vpcId
+  Alias:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref zoneId
+      Name: !Ref fqdnAlias
+      ResourceRecords:
+        - !GetAtt Facade.DNSName
+      TTL: 300
+      Type: CNAME
+Outputs:
+  outFacade:
+    Value: !Ref Facade

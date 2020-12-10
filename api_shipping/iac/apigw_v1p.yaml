@@ -12,8 +12,6 @@ Parameters:
     Type: String
   domainName:
     Type: String
-  hostedZoneId:
-    Type: String
   apiStage:
     Type: String
   apiAuthorizer:
@@ -37,7 +35,7 @@ Resources:
     Properties:
       AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
@@ -75,15 +73,15 @@ Resources:
       Name: unicorn-api-authorizer
       RestApiId: !Ref Api
       Type: TOKEN
-  ApiAlias:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref zoneId
-      Name: !Ref fqdnAlias
-      ResourceRecords:
-        - !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
-      TTL: 300
-      Type: CNAME
+  # ApiAlias:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: !Ref zoneId
+  #     Name: !Ref fqdnAlias
+  #     ResourceRecords:
+  #       - !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+  #     TTL: 300
+  #     Type: CNAME
 
   # Lambda
   FnExecRole:
