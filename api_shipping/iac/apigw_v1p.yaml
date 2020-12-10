@@ -26,6 +26,10 @@ Parameters:
     Type: String
   vpcId:
     Type: String
+  zoneId:
+    Type: String
+  fqdnAlias:
+    Type: String
 Resources:
   # APIGW
   Api:
@@ -71,6 +75,15 @@ Resources:
       Name: unicorn-api-authorizer
       RestApiId: !Ref Api
       Type: TOKEN
+  ApiAlias:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref zoneId
+      Name: !Ref fqdnAlias
+      ResourceRecords:
+        - !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+      TTL: 300
+      Type: CNAME
 
   # Lambda
   FnExecRole:
