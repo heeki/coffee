@@ -1,5 +1,14 @@
 include etc/execute_env.sh
 
+auth: auth.package auth.deploy
+auth.package:
+	sam package --profile ${AUTH_PROFILE} -t ${AUTH_TEMPLATE} --output-template-file ${AUTH_OUTPUT} --s3-bucket ${AUTH_S3BUCKET}
+auth.deploy:
+	sam deploy --profile ${AUTH_PROFILE} -t ${AUTH_OUTPUT} --stack-name ${AUTH_STACK} --parameter-overrides ${AUTH_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+auth.invoke:
+	aws --profile ${PERM_PROFILE} lambda invoke --function-name ${PERM_FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
+	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
+
 cert: cert.package cert.deploy
 cert.package:
 	sam package -t ${CERT_TEMPLATE} --output-template-file ${CERT_OUTPUT} --s3-bucket ${S3BUCKET}
@@ -11,15 +20,6 @@ domain.package:
 	sam package -t ${DOMAIN_TEMPLATE} --output-template-file ${DOMAIN_OUTPUT} --s3-bucket ${S3BUCKET}
 domain.deploy:
 	sam deploy -t ${DOMAIN_OUTPUT} --stack-name ${DOMAIN_STACK} --parameter-overrides ${DOMAIN_PARAMS} --capabilities CAPABILITY_NAMED_IAM
-
-auth: auth.package auth.deploy
-auth.package:
-	sam package --profile ${AUTH_PROFILE} -t ${AUTH_TEMPLATE} --output-template-file ${AUTH_OUTPUT} --s3-bucket ${AUTH_S3BUCKET}
-auth.deploy:
-	sam deploy --profile ${AUTH_PROFILE} -t ${AUTH_OUTPUT} --stack-name ${AUTH_STACK} --parameter-overrides ${AUTH_PARAMS} --capabilities CAPABILITY_NAMED_IAM
-auth.invoke:
-	aws --profile ${PERM_PROFILE} lambda invoke --function-name ${PERM_FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
-	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
 
 perm.cust: perm.cust.package perm.cust.deploy
 perm.cust.package:

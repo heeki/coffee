@@ -33,8 +33,7 @@ Resources:
     Properties:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        # Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.routeKey $context.protocol" $context.status $context.responseLength $context.requestId'
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
@@ -66,10 +65,6 @@ Resources:
       EnableSimpleResponses: !Ref enableSimple
       IdentitySource:
         - $request.header.Authorization
-      # JwtConfiguration:
-      #   Audience:
-      #     - example-clientid
-      #   Issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_example-poolid'
       Name: unicorn-api-authorizer
 
   # DynamoDB

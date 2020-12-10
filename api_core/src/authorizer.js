@@ -4,7 +4,9 @@ exports.handler =  function(event, context, callback) {
     console.log(JSON.stringify(event));
     var token = event.headers.authorization;
     var context = {};
+    context.simple = simple;
     context.token = token;
+    context.pversion = event.version;
     var resource = '';
     if (event.version == '1.0' && 'methodArn' in event) {
         resource = event.methodArn;
