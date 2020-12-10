@@ -11,42 +11,41 @@ components:
   responses:
     error:
       description: error
-      statusCode: 500
-  schemas:
-    error:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-    customer:
-      type: object
-      properties:
-        id:
-          type: string
-        given_name:
-          type: string
-        family_name:
-          type: string
-        birthdate:
-          type: string
-        email:
-          type: string
-        phone_number:
-          type: string
-        phone_number_verified:
-          type: boolean
-    customers:
-      type: array
-      items:
-        $ref: '#/components/schemas/customer'
-    uid:
-      type: object
-      properties:
-        uid:
-          type: string
+  # schemas:
+  #   error:
+  #     type: object
+  #     properties:
+  #       code:
+  #         type: integer
+  #         format: int32
+  #       message:
+  #         type: string
+  #   customer:
+  #     type: object
+  #     properties:
+  #       id:
+  #         type: string
+  #       given_name:
+  #         type: string
+  #       family_name:
+  #         type: string
+  #       birthdate:
+  #         type: string
+  #       email:
+  #         type: string
+  #       phone_number:
+  #         type: string
+  #       phone_number_verified:
+  #         type: boolean
+  #   customers:
+  #     type: array
+  #     items:
+  #       $ref: '#/components/schemas/customer'
+  #   uid:
+  #     type: object
+  #     properties:
+  #       uid:
+  #         type: string
   securitySchemes:
     unicorn-api-authorizer:
       type: apiKey
@@ -69,18 +68,18 @@ paths:
       responses:
         200:
           description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/customers'
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/customers'
         500:
           $ref: '#/components/responses/error'
         default:
           description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/customers'
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/customers'
       security:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
@@ -95,32 +94,31 @@ paths:
     post:
       summary: customer
       description: create customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/customer'
-            examples:
-              acme:
-                value:
-                  uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
-                  name: 'Acme'
-                  email: 'contact@acme.com'
-              hooli:
-                value:
-                  uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
-                  name: 'Hooli'
-                  email: 'contact@hooli.com'
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         $ref: '#/components/schemas/customer'
+      #       examples:
+      #         acme:
+      #           value:
+      #             uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
+      #             name: 'Acme'
+      #             email: 'contact@acme.com'
+      #         hooli:
+      #           value:
+      #             uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
+      #             name: 'Hooli'
+      #             email: 'contact@hooli.com'
       responses:
         200:
           description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/customer'
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/customer'
         default:
           description: error
-          statusCode: 500
       security:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
@@ -146,10 +144,10 @@ paths:
       responses:
         200:
           description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/customer'
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/customer'
         500:
           $ref: '#/components/responses/error'
         default:
@@ -175,29 +173,29 @@ paths:
           schema:
             type: string
           description: customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/customer'
-            examples:
-              acme:
-                value:
-                  uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
-                  name: 'Acme'
-                  email: 'contact@acme.com'
-              hooli:
-                value:
-                  uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
-                  name: 'Hooli'
-                  email: 'contact@hooli.com'
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         $ref: '#/components/schemas/customer'
+      #       examples:
+      #         acme:
+      #           value:
+      #             uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
+      #             name: 'Acme'
+      #             email: 'contact@acme.com'
+      #         hooli:
+      #           value:
+      #             uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
+      #             name: 'Hooli'
+      #             email: 'contact@hooli.com'
       responses:
         200:
           description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/customer'
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/customer'
         500:
           $ref: '#/components/responses/error'
         default:
