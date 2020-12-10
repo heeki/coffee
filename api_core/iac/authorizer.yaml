@@ -5,6 +5,9 @@ Globals:
   Function:
     Runtime: nodejs12.x
     Timeout: 60
+Parameters:
+  isSimple:
+    Type: String
 Resources:
   # Lambda
   FnExecRole:
@@ -39,6 +42,9 @@ Resources:
       CodeUri: ../src
       Handler: authorizer.handler
       Role: !GetAtt FnExecRole.Arn
+      Environment:
+        Variables:
+          SIMPLE_RESPONSE: !Ref isSimple
       Layers:
         - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
   FnLogGroup:

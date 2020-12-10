@@ -55,9 +55,11 @@ components:
         type: request
         authorizeUri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-        authorizerPayloadFormatVersion: 2.0
+        authorizerPayloadFormatVersion:
+          Fn::Sub: '${payloadVersion}'
         authorizerResultTtlInSeconds: 10
-        enableSimpleResponses: false
+        enableSimpleResponses:
+          Fn::Sub: '${enableSimple}'
         identitySource: $request.header.Authorization
 
 paths:

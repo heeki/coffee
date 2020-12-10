@@ -22,6 +22,10 @@ Parameters:
     Type: String
   swaggerKey:
     Type: String
+  payloadVersion:
+    Type: String
+  enableSimple:
+    Type: String
 Resources:
   # APIGW
   Api:
@@ -30,7 +34,7 @@ Resources:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         # Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.routeKey $context.protocol" $context.status $context.responseLength $context.requestId'
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
@@ -55,11 +59,11 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
       ApiId: !Ref Api
-      AuthorizerPayloadFormatVersion: 2.0
+      AuthorizerPayloadFormatVersion: !Ref payloadVersion
       AuthorizerResultTtlInSeconds: 10
       AuthorizerType: REQUEST
       AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-      EnableSimpleResponses: false
+      EnableSimpleResponses: !Ref enableSimple
       IdentitySource:
         - $request.header.Authorization
       # JwtConfiguration:
