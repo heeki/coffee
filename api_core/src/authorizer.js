@@ -11,7 +11,7 @@ exports.handler =  function(event, context, callback) {
     if (event.version == '1.0' && 'methodArn' in event) {
         resource = event.methodArn;
     } else if (event.version == '2.0' && 'routeArn' in event) {
-        resource = event.routeArn;
+        resource = event.routeArn + '/*';
     }
     switch (token) {
         case 'allow':
