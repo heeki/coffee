@@ -2,17 +2,26 @@ let simple = process.env.SIMPLE_RESPONSE;
 
 exports.handler =  function(event, context, callback) {
     console.log(JSON.stringify(event));
-    var token = event.headers.authorization;
-    var context = {};
-    context.simple = simple;
-    context.token = token;
-    context.pversion = event.version;
+    var token = '';
     var resource = '';
+    var context = {};
+    // v1
     if ('methodArn' in event) {
         resource = event.methodArn;
+        context.pversion = '1.0';
+        context.simple = 'false';
+    // v2
     } else if (event.version == '2.0' && 'routeArn' in event) {
         resource = event.routeArn + '/*';
+        context.pversion = event.version;
+        context.simple = simple;
     }
+    if ('authorization' in event.headers) {
+        token = event.headers.authorization;
+    } else if ('Authorization' in event.headers) {
+        token = event.headers.Authorization;
+    }
+    context.token = token;
     switch (token) {
         case 'allow':
             context.reason = 'generating allow policy'

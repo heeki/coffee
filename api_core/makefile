@@ -38,3 +38,9 @@ perm.shipv2.package:
 	sam package --profile ${PERM_PROFILE} -t ${PERM_TEMPLATE} --output-template-file ${PERM_OUTPUT} --s3-bucket ${PERM_S3BUCKET}
 perm.shipv2.deploy:
 	sam deploy --profile ${PERM_PROFILE} -t ${PERM_OUTPUT} --stack-name ${PERM_SHIPV2_STACK} --parameter-overrides ${PERM_SHIPV2_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+
+perm.shipv1p: perm.shipv1p.package perm.shipv1p.deploy
+perm.shipv1p.package:
+	sam package --profile ${PERM_PROFILE} -t ${PERM_TEMPLATE} --output-template-file ${PERM_OUTPUT} --s3-bucket ${PERM_S3BUCKET}
+perm.shipv1p.deploy:
+	sam deploy --profile ${PERM_PROFILE} -t ${PERM_OUTPUT} --stack-name ${PERM_SHIPV1P_STACK} --parameter-overrides ${PERM_SHIPV1P_PARAMS} --capabilities CAPABILITY_NAMED_IAM

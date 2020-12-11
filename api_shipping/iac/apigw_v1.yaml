@@ -22,6 +22,8 @@ Parameters:
     Type: String
   swaggerKey:
     Type: String
+  payloadVersion:
+    Type: String
 Resources:
   # APIGW
   Api:
@@ -29,7 +31,7 @@ Resources:
     Properties:
       AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
@@ -47,20 +49,11 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       RestApiId: !Ref Api
-      BasePath: shippingv1
+      BasePath: shipping-v1
       DomainName: !Ref domainName
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
-  # ApiAuthorizer:
-  #   Type: AWS::ApiGateway::Authorizer
-  #   Properties:
-  #     AuthorizerResultTtlInSeconds: 10
-  #     AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-  #     IdentitySource: method.request.header.Authorization
-  #     Name: unicorn-api-authorizer
-  #     RestApiId: !Ref Api
-  #     Type: REQUEST
 
   # Lambda
   FnExecRole:

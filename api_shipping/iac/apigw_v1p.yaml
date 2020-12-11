@@ -20,6 +20,8 @@ Parameters:
     Type: String
   swaggerKey:
     Type: String
+  payloadVersion:
+    Type: String
   vpcEndpointId:
     Type: String
   vpcId:
@@ -59,20 +61,11 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       RestApiId: !Ref Api
-      BasePath: shippingv1p
+      BasePath: shipping-v1p
       DomainName: !Ref domainName
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
-  ApiAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      AuthorizerResultTtlInSeconds: 10
-      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-      IdentitySource: method.request.header.Authorization
-      Name: unicorn-api-authorizer
-      RestApiId: !Ref Api
-      Type: TOKEN
   # ApiAlias:
   #   Type: AWS::Route53::RecordSet
   #   Properties:
