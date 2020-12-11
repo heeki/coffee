@@ -51,6 +51,7 @@ components:
       type: apiKey
       name: Authorization
       in: header
+      x-amazon-apigateway-authtype: custom
       x-amazon-apigateway-authorizer:
         authorizerUri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'

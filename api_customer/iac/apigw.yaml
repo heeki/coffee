@@ -54,18 +54,6 @@ Resources:
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
-  ApiAuthorizer:
-    Type: AWS::ApiGatewayV2::Authorizer
-    Properties:
-      ApiId: !Ref Api
-      AuthorizerPayloadFormatVersion: !Ref payloadVersion
-      AuthorizerResultTtlInSeconds: 10
-      AuthorizerType: REQUEST
-      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-      EnableSimpleResponses: !Ref enableSimple
-      IdentitySource:
-        - $request.header.Authorization
-      Name: unicorn-api-authorizer
 
   # DynamoDB
   Table:

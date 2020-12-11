@@ -17,7 +17,8 @@ components:
         authorizerPayloadFormatVersion:
           Fn::Sub: '${payloadVersion}'
         authorizerResultTtlInSeconds: 10
-        enableSimpleResponses: false
+        enableSimpleResponses:
+          Fn::Sub: '${enableSimple}'
         identitySource: $request.header.Authorization
         type: request
 
