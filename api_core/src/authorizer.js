@@ -8,7 +8,7 @@ exports.handler =  function(event, context, callback) {
     context.token = token;
     context.pversion = event.version;
     var resource = '';
-    if (event.version == '1.0' && 'methodArn' in event) {
+    if ('methodArn' in event) {
         resource = event.methodArn;
     } else if (event.version == '2.0' && 'routeArn' in event) {
         resource = event.routeArn + '/*';

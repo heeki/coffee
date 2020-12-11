@@ -12,7 +12,7 @@ components:
       in: header
       x-amazon-apigateway-authorizer:
         type: request
-        authorizeUri:
+        authorizerUri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
         authorizerPayloadFormatVersion: 2.0
         authorizerResultTtlInSeconds: 10

@@ -10,14 +10,13 @@ components:
       type: apiKey
       name: Authorization
       in: header
+      x-amazon-apigateway-authtype: custom
       x-amazon-apigateway-authorizer:
-        type: request
-        authorizeUri:
-          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-        authorizerPayloadFormatVersion: 2.0
         authorizerResultTtlInSeconds: 10
-        enableSimpleResponses: false
-        identitySource: $request.header.Authorization
+        authorizerUri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
+        identitySource: method.request.header.Authorization
+        type: request
 
 paths:
   /:
@@ -33,7 +32,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion: 2.0
+        payloadFormatVersion: 1.0
         responses:
           default:
             statusCode: 200
@@ -52,7 +51,7 @@ paths:
         - unicorn-api-authorizer: []
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion: 2.0
+        payloadFormatVersion: 1.0
         responses:
           default:
             statusCode: 200

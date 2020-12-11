@@ -52,15 +52,15 @@ Resources:
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
-  ApiAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      AuthorizerResultTtlInSeconds: 10
-      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-      IdentitySource: method.request.header.Authorization
-      Name: unicorn-api-authorizer
-      RestApiId: !Ref Api
-      Type: TOKEN
+  # ApiAuthorizer:
+  #   Type: AWS::ApiGateway::Authorizer
+  #   Properties:
+  #     AuthorizerResultTtlInSeconds: 10
+  #     AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
+  #     IdentitySource: method.request.header.Authorization
+  #     Name: unicorn-api-authorizer
+  #     RestApiId: !Ref Api
+  #     Type: REQUEST
 
   # Lambda
   FnExecRole:
