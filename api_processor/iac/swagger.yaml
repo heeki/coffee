@@ -1,0 +1,45 @@
+openapi: 3.0.1
+info:
+  title: unicorn-api-processor
+  description: Unicorn Coffee API for Processing Usage
+  version: 0.1.0
+
+paths:
+  /landing:
+    get:
+      summary: landing
+      description: returns presigned url for uploading image
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion:
+          Fn::Sub: '${payloadVersion}'
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnLanding.Arn}/invocations'
+  /usage:
+    post:
+      summary: usage
+      description: process uploaded image
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion:
+          Fn::Sub: '${payloadVersion}'
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUsage.Arn}/invocations'
