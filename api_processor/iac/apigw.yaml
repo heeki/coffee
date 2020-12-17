@@ -12,6 +12,8 @@ Parameters:
     Type: String
   apiStage:
     Type: String
+  apiAuthorizer:
+    Type: String
   swaggerBucket:
     Type: String
   swaggerKey:
@@ -21,6 +23,9 @@ Parameters:
   enableSimple:
     Type: String
 Resources:
+  # S3
+  Bucket:
+    Type: AWS::S3::Bucket
   # APIGW
   Api:
     Type: AWS::Serverless::HttpApi
@@ -74,6 +79,15 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:log-group:*:*'
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Join ["/", [!GetAtt Bucket.Arn, "*"]]
   # Landing
   FnLanding:
     Type: AWS::Serverless::Function
@@ -81,8 +95,9 @@ Resources:
       CodeUri: ../src
       Handler: fn_landing.handler
       Role: !GetAtt FnExecRole.Arn
-      Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+      Environment:
+        Variables:
+          BUCKET: !Ref Bucket
   FnLandingLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -102,8 +117,6 @@ Resources:
       CodeUri: ../src
       Handler: fn_usage.handler
       Role: !GetAtt FnExecRole.Arn
-      Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
   FnUsageLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
