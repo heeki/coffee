@@ -40,6 +40,7 @@ def handler(event, context):
     payload = []
     for record in event["Records"]:
         (bucket, okey) = get_s3_bucket_key(record)
+        print(json.dumps({"bucket": bucket, "okey": okey}))
         img = Image(bucket)
         data = img.get_labels(okey)
         status = data["ResponseMetadata"]["HTTPStatusCode"]

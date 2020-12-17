@@ -1,1 +1,15 @@
-{}
+{
+    "StartAt": "Labels",
+    "States": {
+        "Labels": {
+            "Type": "Task",
+            "Resource": "${FnLabels}",
+            "Next": "Processor"
+        },
+        "Processor": {
+            "Type": "Task",
+            "Resource": "${FnProcessor}",
+            "End": true
+        }
+    }
+}

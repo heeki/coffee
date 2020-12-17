@@ -5,10 +5,79 @@ Globals:
   Function:
     Runtime: python3.8
     Timeout: 60
+Parameters:
+  aslBucket:
+    Type: String
+  aslKey:
+    Type: String
 Resources:
   # S3
   Bucket:
     Type: AWS::S3::Bucket
+  # Step Function
+  SFnExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: "*"
+        - PolicyName: lambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt FnLabels.Arn
+                  - !GetAtt FnProcessor.Arn
+  SFn:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+        DefinitionS3Location:
+          Bucket: !Ref aslBucket
+          Key: !Ref aslKey
+        DefinitionSubstitutions:
+          FnLabels: !GetAtt FnLabels.Arn
+          FnProcessor: !GetAtt FnProcessor.Arn
+        LoggingConfiguration:
+          Destinations:
+            - CloudWatchLogsLogGroup:
+                LogGroupArn: !GetAtt SFnLogGroup.Arn
+          IncludeExecutionData: true
+          Level: ALL
+        RoleArn: !GetAtt SFnExecRole.Arn
+        StateMachineType: STANDARD
+        TracingConfiguration:
+          Enabled: false
+  SFnLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/sf/unicorn-sf-processor"
+      RetentionInDays: 7
   # Lambda
   FnExecRole:
     Type: AWS::IAM::Role
@@ -35,6 +104,24 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:log-group:*:*'
+        - PolicyName: rekognition
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rekognition:DetectText
+                  - rekognition:GetTextDetection
+                Resource: '*'
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${Bucket}/*"
   # FnLabels
   FnLabels:
     Type: AWS::Serverless::Function
@@ -42,15 +129,20 @@ Resources:
       CodeUri: ../src
       Handler: fn_labels.handler
       Role: !GetAtt FnExecRole.Arn
-      Events:
-        ObjectCreatedEvent:
-          Type: S3
-          Properties:
-            Bucket: !Ref Bucket
-            Events: s3:ObjectCreated:*
   FnLabelsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnLabels}"
       RetentionInDays: 7
-
+  # FnProcessor
+  FnProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src
+      Handler: fn_processor.handler
+      Role: !GetAtt FnExecRole.Arn
+  FnProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${FnProcessor}"
+      RetentionInDays: 7
