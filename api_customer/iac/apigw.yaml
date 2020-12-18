@@ -43,7 +43,7 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/unicorn-api-customer"
+      LogGroupName: !Sub "/aws/apigateway/unicorn-api-customer-${Api}"
       RetentionInDays: 7
   ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
