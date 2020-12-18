@@ -50,3 +50,9 @@ perm.processor.package:
 	sam package --profile ${PERM_PROFILE} -t ${PERM_TEMPLATE} --output-template-file ${PERM_OUTPUT} --s3-bucket ${PERM_S3BUCKET}
 perm.processor.deploy:
 	sam deploy --profile ${PERM_PROFILE} -t ${PERM_OUTPUT} --stack-name ${PERM_PROCESSOR_STACK} --parameter-overrides ${PERM_PROCESSOR_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+
+perm.processor2: perm.processor2.package perm.processor2.deploy
+perm.processor2.package:
+	sam package --profile ${PERM_PROFILE} -t ${PERM_TEMPLATE} --output-template-file ${PERM_OUTPUT} --s3-bucket ${PERM_S3BUCKET}
+perm.processor2.deploy:
+	sam deploy --profile ${PERM_PROFILE} -t ${PERM_OUTPUT} --stack-name ${PERM_PROCESSOR2_STACK} --parameter-overrides ${PERM_PROCESSOR2_PARAMS} --capabilities CAPABILITY_NAMED_IAM
