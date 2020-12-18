@@ -29,7 +29,6 @@ Resources:
     Properties:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        # Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.routeKey $context.protocol" $context.status $context.responseLength $context.requestId'
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       StageName: !Ref apiStage
       DefinitionBody:
@@ -40,7 +39,7 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/unicorn-api-order"
+      LogGroupName: !Sub "/aws/apigateway/unicorn-api-order-${Api}"
       RetentionInDays: 7
   ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
@@ -51,23 +50,6 @@ Resources:
       Stage: !Ref apiStage
     DependsOn:
       - ApiStage
-  # ApiAuthorizer:
-  #   Type: AWS::ApiGatewayV2::Authorizer
-  #   Properties:
-  #     ApiId: !Ref Api
-  #     AuthorizerPayloadFormatVersion: 2.0
-  #     AuthorizerResultTtlInSeconds: 10
-  #     AuthorizerType: REQUEST
-  #     AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
-  #     EnableSimpleResponses: false
-  #     IdentitySource:
-  #       - $request.header.Authorization
-  #     # JwtConfiguration:
-  #     #   Audience:
-  #     #     - example-clientid
-  #     #   Issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_example-poolid'
-  #     Name: unicorn-api-authorizer
-
   # Lambda
   FnExecRole:
     Type: AWS::IAM::Role
@@ -114,7 +96,6 @@ Resources:
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
-
 Outputs:
   outApi:
     Value: !Ref Api
