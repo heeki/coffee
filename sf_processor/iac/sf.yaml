@@ -53,6 +53,7 @@ Resources:
                 Resource:
                   - !GetAtt FnLabels.Arn
                   - !GetAtt FnProcessor.Arn
+  # Standard
   SFn:
     Type: AWS::StepFunctions::StateMachine
     Properties:
@@ -75,7 +76,32 @@ Resources:
   SFnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/sf/unicorn-sf-processor"
+      LogGroupName: !Sub "/aws/sf/unicorn-sf-processor-std"
+      RetentionInDays: 7
+  # Express
+  SFnEx:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+        DefinitionS3Location:
+          Bucket: !Ref aslBucket
+          Key: !Ref aslKey
+        DefinitionSubstitutions:
+          FnLabels: !GetAtt FnLabels.Arn
+          FnProcessor: !GetAtt FnProcessor.Arn
+        LoggingConfiguration:
+          Destinations:
+            - CloudWatchLogsLogGroup:
+                LogGroupArn: !GetAtt SFnLogGroup.Arn
+          IncludeExecutionData: true
+          Level: ALL
+        RoleArn: !GetAtt SFnExecRole.Arn
+        StateMachineType: EXPRESS
+        TracingConfiguration:
+          Enabled: false
+  SFnExLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/sf/unicorn-sf-processor-ex"
       RetentionInDays: 7
   # Lambda
   FnExecRole:
@@ -145,3 +171,8 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${FnProcessor}"
       RetentionInDays: 7
+Outputs:
+  outSFn:
+    Value: !Ref SFn
+  outSFnEx:
+    Value: !Ref SFnEx

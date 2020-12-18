@@ -65,7 +65,7 @@ paths:
         type: AWS_PROXY
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUsage.Arn}/invocations'
-  /label:
+  /label/std:
     post:
       summary: label
       description: gets image labels
@@ -83,7 +83,29 @@ paths:
         requestParameters:
           Input: $request.body
           StateMachineArn:
-            Fn::Sub: 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sf}'
+            Fn::Sub: 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sfStd}'
+        payloadFormatVersion: 1.0
+        type: AWS_PROXY
+        connectionType: INTERNET
+  /label/ex:
+    post:
+      summary: label
+      description: gets image labels
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      # security:
+      #   - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        integrationSubtype: StepFunctions-StartSyncExecution
+        credentials:
+          Fn::Sub: '${ApiExecRole.Arn}'
+        requestParameters:
+          Input: $request.body
+          StateMachineArn:
+            Fn::Sub: 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sfEx}'
         payloadFormatVersion: 1.0
         type: AWS_PROXY
         connectionType: INTERNET

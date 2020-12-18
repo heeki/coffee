@@ -22,7 +22,9 @@ Parameters:
     Type: String
   enableSimple:
     Type: String
-  sf:
+  sfStd:
+    Type: String
+  sfEx:
     Type: String
 Resources:
   # S3
@@ -51,7 +53,9 @@ Resources:
                 Action:
                   - states:StartExecution
                   - states:StartSyncExecution
-                Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sf}"
+                Resource:
+                  - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sfStd}"
+                  - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sfEx}"
   Api:
     Type: AWS::Serverless::HttpApi
     Properties:
