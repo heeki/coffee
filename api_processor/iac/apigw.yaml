@@ -22,17 +22,42 @@ Parameters:
     Type: String
   enableSimple:
     Type: String
+  sf:
+    Type: String
 Resources:
   # S3
   Bucket:
     Type: AWS::S3::Bucket
   # APIGW
+  ApiExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: sf
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                  - states:StartSyncExecution
+                Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sf}"
   Api:
     Type: AWS::Serverless::HttpApi
     Properties:
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion", "response.latency.ms":"$context.responseLatency", "error.message":"$context.error.message" }'
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:

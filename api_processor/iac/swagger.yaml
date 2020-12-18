@@ -16,7 +16,7 @@ components:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${apiAuthorizer}/invocations'
         authorizerPayloadFormatVersion:
           Fn::Sub: '${payloadVersion}'
-        authorizerResultTtlInSeconds: 10
+        authorizerResultTtlInSeconds: 2
         enableSimpleResponses:
           Fn::Sub: '${enableSimple}'
         identitySource: $request.header.Authorization
@@ -47,7 +47,7 @@ paths:
   /usage:
     post:
       summary: usage
-      description: process uploaded image
+      description: gets usage information
       responses:
         200:
           description: ok
@@ -65,3 +65,25 @@ paths:
         type: AWS_PROXY
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUsage.Arn}/invocations'
+  /label:
+    post:
+      summary: label
+      description: gets image labels
+      responses:
+        200:
+          description: ok
+        default:
+          description: error
+      # security:
+      #   - unicorn-api-authorizer: []
+      x-amazon-apigateway-integration:
+        integrationSubtype: StepFunctions-StartExecution
+        credentials:
+          Fn::Sub: '${ApiExecRole.Arn}'
+        requestParameters:
+          Input: $request.body
+          StateMachineArn:
+            Fn::Sub: 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${sf}'
+        payloadFormatVersion: 1.0
+        type: AWS_PROXY
+        connectionType: INTERNET

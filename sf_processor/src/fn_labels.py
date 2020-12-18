@@ -37,13 +37,10 @@ def get_s3_bucket_key(record):
 
 # function: lambda invoke handler
 def handler(event, context):
-    payload = []
-    for record in event["Records"]:
-        (bucket, okey) = get_s3_bucket_key(record)
-        print(json.dumps({"bucket": bucket, "okey": okey}))
-        img = Image(bucket)
-        data = img.get_labels(okey)
-        status = data["ResponseMetadata"]["HTTPStatusCode"]
-        payload.append(img.get_values(data))
-    # response = build_response(status, payload)
+    print(json.dumps(event))
+    bucket = event["bucket"]
+    okey = event["key"]
+    img = Image(bucket)
+    data = img.get_labels(okey)
+    payload = img.get_values(data)
     return payload

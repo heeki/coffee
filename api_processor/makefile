@@ -18,9 +18,9 @@ lambda.invoke:
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
 
 s3.generate:
-	curl -s -H "Authorization: allow" -XGET https://coffee.heeki.cloud/processor/landing | jq | tee tmp/presigned.json
+	curl -s -H "Authorization: allow" -XGET https://coffee.heeki.cloud/processor/landing | jq | tee ${P_PRESIGNED}
 s3.upload:
-	$(eval P_PRESIGNED_URL=$(shell cat tmp/presigned.json | jq -r '.presigned_url'))
+	$(eval P_PRESIGNED_URL=$(shell cat $$P_PRESIGNED | jq -r '.presigned_url'))
 	curl -XPUT -T ${P_FILE} "${P_PRESIGNED_URL}"
 
 test:

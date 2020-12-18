@@ -10,10 +10,9 @@ Parameters:
     Type: String
   aslKey:
     Type: String
+  rekBucket:
+    Type: String
 Resources:
-  # S3
-  Bucket:
-    Type: AWS::S3::Bucket
   # Step Function
   SFnExecRole:
     Type: AWS::IAM::Role
@@ -121,7 +120,7 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:PutObject
-                Resource: !Sub "arn:aws:s3:::${Bucket}/*"
+                Resource: !Sub "arn:aws:s3:::${rekBucket}/*"
   # FnLabels
   FnLabels:
     Type: AWS::Serverless::Function
