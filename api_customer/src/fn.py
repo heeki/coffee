@@ -23,11 +23,20 @@ def build_response(code, body):
 
     return response
 
+def get_method(event):
+    response = None
+    context = event["requestContext"]
+    # version 1.0
+    if "httpMethod" in context:
+        response = context["httpMethod"]
+    elif "http" in context and "method" in context["http"]:
+        response = context["http"]["method"]
+    return response
 
 # function: lambda invoker handler
 def handler(event, context):
     print(json.dumps(event))
-    method = event["requestContext"]["http"]["method"] 
+    method = get_method(event)
 
     if method == "GET":
         response = customer.get_all()

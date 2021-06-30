@@ -91,7 +91,7 @@ paths:
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
     post:
@@ -130,7 +130,7 @@ paths:
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
   /{proxy+}:
@@ -163,7 +163,7 @@ paths:
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'
     post:
@@ -211,7 +211,7 @@ paths:
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'
     delete:
@@ -239,6 +239,6 @@ paths:
         responses:
           default:
             statusCode: 200
-        type: AWS_PROXY
+        type: aws_proxy
         uri:
           Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FnUid.Arn}/invocations'

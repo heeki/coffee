@@ -37,7 +37,8 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+            # Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+            Location: ./swagger.yaml
       EndpointConfiguration:
         Type: REGIONAL
   ApiLogGroup:

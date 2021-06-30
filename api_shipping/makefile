@@ -34,9 +34,9 @@ api.v2.deploy:
 	sam deploy -t ${V2_OUTPUT} --stack-name ${V2_STACK} --parameter-overrides ${V2_PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
-	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
+	sam local invoke -t ${V1_TEMPLATE} --parameter-overrides ${V1_PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
 sam.local.api:
-	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS}
+	sam local start-api -t ${V1_TEMPLATE} --parameter-overrides ${V1_PARAMS}
 lambda.invoke:
 	aws --profile ${PROFILE} lambda invoke --function-name ${FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode

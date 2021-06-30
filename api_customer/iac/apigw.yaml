@@ -36,10 +36,11 @@ Resources:
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
       StageName: !Ref apiStage
       DefinitionBody:
-        Fn::Transform:
+        'Fn::Transform':
           Name: AWS::Include
           Parameters:
-            Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+            # Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
+            Location: swagger.yaml
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -138,7 +139,7 @@ Resources:
         Variables:
           TABLE: !Ref Table
       Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
   FnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -162,7 +163,7 @@ Resources:
         Variables:
           TABLE: !Ref Table
       Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
+        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
   FnUidLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

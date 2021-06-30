@@ -1,4 +1,4 @@
-include etc/execute_env.sh
+include etc/environment.sh
 
 sam: sam.package sam.deploy
 sam.build:
@@ -10,9 +10,9 @@ sam.deploy:
 	sam deploy -t ${OUTPUT} --stack-name ${STACK} --parameter-overrides ${PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
 sam.local.invoke:
-	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn
+	sam local invoke -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq -r '.body' | jq
 sam.local.api:
-	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS}
+	sam local start-api -t ${TEMPLATE} --parameter-overrides ${PARAMS} --env-vars etc/envvars.json
 lambda.invoke:
 	aws --profile ${PROFILE} lambda invoke --function-name ${FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
@@ -20,4 +20,4 @@ lambda.invoke:
 test:
 	$(eval P_SWAGGER_KEY=$(shell shasum -a 256 iac/swagger.yaml | awk '{print $$1}'))
 clean:
-	rm -rf build/*
+	rm -rf build/*i knew
