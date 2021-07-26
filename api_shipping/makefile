@@ -10,7 +10,6 @@ api.v1: api.v1.package api.v1.deploy
 api.v1.build:
 	sam build --profile ${PROFILE} --template ${V1_TEMPLATE} --parameter-overrides ${V1_PARAMS} --build-dir build --manifest requirements.txt --use-container
 api.v1.package:
-	aws s3 cp iac/swagger_v1.yaml s3://${P_SWAGGER_BUCKET}/${P_SWAGGERV1_KEY}
 	sam package -t ${V1_TEMPLATE} --output-template-file ${V1_OUTPUT} --s3-bucket ${S3BUCKET}
 api.v1.deploy:
 	sam deploy -t ${V1_OUTPUT} --stack-name ${V1_STACK} --parameter-overrides ${V1_PARAMS} --capabilities CAPABILITY_NAMED_IAM
@@ -19,7 +18,6 @@ api.v1p: api.v1p.package api.v1p.deploy
 api.v1p.build:
 	sam build --profile ${PROFILE} --template ${V1P_TEMPLATE} --parameter-overrides ${V1P_PARAMS} --build-dir build --manifest requirements.txt --use-container
 api.v1p.package:
-	aws s3 cp iac/swagger_v1p.yaml s3://${P_SWAGGER_BUCKET}/${P_SWAGGERV1_KEY}
 	sam package -t ${V1P_TEMPLATE} --output-template-file ${V1P_OUTPUT} --s3-bucket ${S3BUCKET}
 api.v1p.deploy:
 	sam deploy -t ${V1P_OUTPUT} --stack-name ${V1P_STACK} --parameter-overrides ${V1P_PARAMS} --capabilities CAPABILITY_NAMED_IAM
@@ -28,7 +26,6 @@ api.v2: api.v2.package api.v2.deploy
 api.v2.build:
 	sam build --profile ${PROFILE} --template ${V2_TEMPLATE} --parameter-overrides ${V2_PARAMS} --build-dir build --manifest requirements.txt --use-container
 api.v2.package:
-	aws s3 cp iac/swagger_v2.yaml s3://${P_SWAGGER_BUCKET}/${P_SWAGGERV2_KEY}
 	sam package -t ${V2_TEMPLATE} --output-template-file ${V2_OUTPUT} --s3-bucket ${S3BUCKET}
 api.v2.deploy:
 	sam deploy -t ${V2_OUTPUT} --stack-name ${V2_STACK} --parameter-overrides ${V2_PARAMS} --capabilities CAPABILITY_NAMED_IAM

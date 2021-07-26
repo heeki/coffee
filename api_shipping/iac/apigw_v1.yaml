@@ -31,14 +31,50 @@ Resources:
     Properties:
       AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "auth.status":"$context.authorizer.status", "auth.error":"$context.authorizer.error", "auth.token":"$context.authorizer.token", "auth.reason":"$context.authorizer.reason", "auth.simple":"$context.authorizer.simple", "auth.pversion":"$context.authorizer.pversion" }'
+        Format: '{
+          "ctx.requestId":"$context.requestId",
+          "ctx.ip": "$context.identity.sourceIp",
+          "ctx.requestTime":"$context.requestTime",
+          "ctx.httpMethod":"$context.httpMethod",
+          "ctx.routeKey":"$context.routeKey",
+          "ctx.status":"$context.status",
+          "ctx.protocol":"$context.protocol",
+          "ctx.responseLength":"$context.responseLength",
+          "auth.status":"$context.authorizer.status",
+          "auth.error":"$context.authorizer.error",
+          "auth.token":"$context.authorizer.token",
+          "auth.reason":"$context.authorizer.reason",
+          "auth.simple":"$context.authorizer.simple",
+          "auth.pversion":"$context.authorizer.pversion"
+        }'
+          # "input.body":"$input.json($)",
+          # "input.params" : {
+          #   "headers" : {
+          #     #foreach($header in $input.params().header.keySet())
+          #     "$header" : "$util.escapeJavaScript($input.params().header.get($header))"
+          #     #if($foreach.hasNext),#end
+          #     #end
+          #   },
+          #   "path" : {
+          #     #foreach($path in $input.params().path.keySet())
+          #     "$path" : "$util.escapeJavaScript($input.params().path.get($path))"
+          #     #if($foreach.hasNext),#end
+          #     #end
+          #   },
+          #   "query" : {
+          #     #foreach($query in $input.params().query.keySet())
+          #     "$query" : "$util.escapeJavaScript($input.params().query.get($query))"
+          #     #if($foreach.hasNext),#end
+          #     #end
+          #   }
+          # }
       StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             # Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
-            Location: ./swagger.yaml
+            Location: ./swagger_v1.yaml
       EndpointConfiguration:
         Type: REGIONAL
   ApiLogGroup:
