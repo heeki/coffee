@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Test for x-account base path mapping
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+  Function:
+    Runtime: python3.8
+    Timeout: 60
+Parameters:
+  pApi:
+    Type: String
+  pDomainName:
+    Type: String
+  pApiStage:
+    Type: String
+Resources:
+  # APIGW
+  ApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      RestApiId: !Ref pApi
+      BasePath: xaccount
+      DomainName: !Ref pDomainName
+      Stage: !Ref pApiStage
+Outputs:
+  outApiMapping:
+    Value: !Ref ApiMapping

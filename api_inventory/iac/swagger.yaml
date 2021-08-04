@@ -1,0 +1,34 @@
+openapi: 3.0.1
+info:
+  title: apigw-xaccount
+  description: Cross-account APIGW integration with custom domain names
+  version: 0.1.0
+
+paths:
+  /test:
+    get:
+      summary: test
+      description: returns test
+      responses:
+        200:
+          description: ok
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion:
+          Fn::Sub: '${payloadVersion}'
+        type: aws_proxy
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    post:
+      summary: test
+      description: create test
+      responses:
+        200:
+          description: ok
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion:
+          Fn::Sub: '${payloadVersion}'
+        type: aws_proxy
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
