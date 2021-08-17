@@ -13,5 +13,9 @@ api.local.api:
 api.invoke:
 	aws --profile ${PROFILE1} lambda invoke --function-name ${OUT_FN} --invocation-type RequestResponse --payload file://etc/event.json --cli-binary-format raw-in-base64-out --log-type Tail tmp/fn.json | jq "." > tmp/response.json
 	cat tmp/response.json | jq -r ".LogResult" | base64 --decode
-api.curl:
-	curl -s -H "x-api-key: ${OUT_APIKEY}" -XGET ${OUT_API} | jq
+api.curl1:
+	curl -s -H "x-api-key: ${OUT_APIKEY1}" -XGET ${OUT_API1} | jq '. | {"path": .path, "httpMethod": .httpMethod, "headers": .headers, "requestContext": .requestContext, "body": .body}'
+api.curl21:
+	curl -s -H "x-api-key: ${OUT_APIKEY1}" -XGET ${OUT_API2} | jq '. | {"path": .path, "httpMethod": .httpMethod, "headers": .headers, "requestContext": .requestContext, "body": .body}'
+api.curl22:
+	curl -s -H "x-api-key: ${OUT_APIKEY2}" -XGET ${OUT_API2} | jq '. | {"path": .path, "httpMethod": .httpMethod, "headers": .headers, "requestContext": .requestContext, "body": .body}'

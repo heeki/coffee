@@ -16,12 +16,12 @@ Parameters:
   payloadVersion:
     Type: String
 Resources:
-  # APIGW
-  Api:
+  # APIGW: Instance1
+  Api1:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !GetAtt ApiLogGroup.Arn
+        DestinationArn: !GetAtt Api1LogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       DefinitionBody:
         Fn::Transform:
@@ -32,32 +32,66 @@ Resources:
         Type: REGIONAL
       StageName: !Ref apiStage
       # TracingEnabled: True
-  ApiLogGroup:
+  Api1LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/apigw-keys-${Api}"
+      LogGroupName: !Sub "/aws/apigateway/apigw-keys-${Api1}"
       RetentionInDays: 7
+  # APIGW: Instance2
+  Api2:
+    Type: AWS::Serverless::Api
+    Properties:
+      AccessLogSetting:
+        DestinationArn: !GetAtt Api2LogGroup.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger.yaml
+      EndpointConfiguration:
+        Type: REGIONAL
+      StageName: !Ref apiStage
+      # TracingEnabled: True
+  Api2LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/apigw-keys-${Api2}"
+      RetentionInDays: 7
+  # APIGW: Keys
   ApiKey1:
+    DependsOn:
+      - Api1Stage
+      - Api2Stage
     Type: AWS::ApiGateway::ApiKey
     Properties:
       Name: apigw-key-1
       Enabled: True
-      StageKeys:
-        - RestApiId: !Ref Api
-          StageName: !Ref apiStage
+      # StageKeys:
+      #   - RestApiId: !Ref Api1
+      #     StageName: !Ref apiStage
+      #   - RestApiId: !Ref Api2
+      #     StageName: !Ref apiStage
   ApiKey2:
+    DependsOn:
+      - Api1Stage
+      - Api2Stage
     Type: AWS::ApiGateway::ApiKey
     Properties:
       Name: apigw-key-2
       Enabled: True
-      StageKeys:
-        - RestApiId: !Ref Api
-          StageName: !Ref apiStage
-  ApiUsagePlan:
+      # StageKeys:
+      #   - RestApiId: !Ref Api1
+      #     StageName: !Ref apiStage
+      #   - RestApiId: !Ref Api2
+      #     StageName: !Ref apiStage
+  # APIGW: Usage Plans
+  Api1UsagePlan:
+    DependsOn: Api1Stage
     Type: AWS::ApiGateway::UsagePlan
     Properties:
       ApiStages:
-        - ApiId: !Ref Api
+        - ApiId: !Ref Api1
           Stage: !Ref apiStage
       Quota:
         Limit: 1000
@@ -66,12 +100,38 @@ Resources:
         BurstLimit: 100
         RateLimit: 10.0
       UsagePlanName: apigw-usage-1
-  ApiUsagePlanKey:
+  Api1UsagePlanKey:
     Type: AWS::ApiGateway::UsagePlanKey
     Properties:
       KeyId: !Ref ApiKey1
       KeyType: API_KEY
-      UsagePlanId: !Ref ApiUsagePlan
+      UsagePlanId: !Ref Api1UsagePlan
+  Api2UsagePlan:
+    DependsOn: Api2Stage
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      ApiStages:
+        - ApiId: !Ref Api2
+          Stage: !Ref apiStage
+      Quota:
+        Limit: 1000
+        Period: DAY
+      Throttle:
+        BurstLimit: 100
+        RateLimit: 10.0
+      UsagePlanName: apigw-usage-2
+  Api2UsagePlanKey1:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey1
+      KeyType: API_KEY
+      UsagePlanId: !Ref Api2UsagePlan
+  Api2UsagePlanKey2:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey2
+      KeyType: API_KEY
+      UsagePlanId: !Ref Api2UsagePlan
   # Lambda
   FnExecRole:
     Type: AWS::IAM::Role
@@ -129,23 +189,36 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${Fn}"
       RetentionInDays: 7
-  FnPerm:
+  FnPerm1:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt Fn.Arn
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api1}/*/*/*'
+  FnPerm2:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Fn.Arn
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api2}/*/*/*'
 Outputs:
-  outApi:
-    Value: !Ref Api
-  outApiUrl:
-    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${apiStage}'
+  outApi1:
+    Value: !Ref Api1
+  outApi2:
+    Value: !Ref Api2
+  outApi1Url:
+    Value: !Sub 'https://${Api1}.execute-api.${AWS::Region}.amazonaws.com/${apiStage}'
+  outApi2Url:
+    Value: !Sub 'https://${Api2}.execute-api.${AWS::Region}.amazonaws.com/${apiStage}'
   outFn:
     Value: !Ref Fn
   outApiKey1:
     Value: !Ref ApiKey1
   outApiKey2:
     Value: !Ref ApiKey2
-  outUsagePlan:
-    Value: !Ref ApiUsagePlan
+  outApi1UsagePlan:
+    Value: !Ref Api1UsagePlan
+  outApi2UsagePlan:
+    Value: !Ref Api2UsagePlan
