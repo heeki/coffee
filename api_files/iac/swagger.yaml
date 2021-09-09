@@ -1,0 +1,55 @@
+openapi: 3.0.1
+info:
+  title: apigw-api-s3
+  description: Testing S3 integration
+  version: 0.1.0
+
+paths:
+  /{folder}:
+    get:
+      summary: test
+      description: returns test
+      produces:
+        - application/json
+      parameters:
+        - name: folder
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: ok
+          headers:
+            Content-Length:
+              type: string
+            Content-Type:
+              type: string
+            Timestamp:
+              type: string
+        400:
+          description: client error
+        500:
+          description: server error
+      security:
+        - sigv4: []
+      x-amazon-apigateway-integration:
+        credentials:
+          Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/service-role/${BucketRole}'
+        httpMethod: GET
+        passthroughBehavior: when_no_match
+        requestParameters:
+          integration.request.path.bucket: method.request.path.folder
+        responses:
+          "4\\d{2}":
+            statusCode: 400
+          "5\\d{2}":
+            statusCode: 500
+          default:
+            statusCode: 200
+            responseParameters:
+              method.response.header.Content-Length: integration.response.header.Content-Length
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Timestamp: integration.response.header.Timestamp
+        type: aws
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:s3:path/{bucket}'

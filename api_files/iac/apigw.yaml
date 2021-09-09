@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: APIGW for testing S3 integration
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+  Function:
+    Layers:
+      - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14'
+    Runtime: python3.8
+    Timeout: 60
+    Tracing: Active
+Parameters:
+  apiStage:
+    Type: String
+  payloadVersion:
+    Type: String
+Resources:
+  # S3
+  Bucket:
+    Type: AWS::S3::Bucket
+  BucketRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: 
+                  - !Sub '${Bucket.Arn}'
+                  - !Sub '${Bucket.Arn}/*'
+  # APIGW
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger.yaml
+      EndpointConfiguration:
+        Type: REGIONAL
+      StageName: !Ref apiStage
+      # TracingEnabled: True
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/apigw-s3-${Api}"
+      RetentionInDays: 7
+  # Lambda
+  # FnExecRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service:
+  #               - lambda.amazonaws.com
+  #           Action:
+  #             - sts:AssumeRole
+  #     Path: '/service-role/'
+  #     Policies:
+  #       - PolicyName: cloudwatch-logs
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - logs:CreateLogStream
+  #                 - logs:PutLogEvents
+  #                 - logs:DescribeLogStreams
+  #               Resource: 'arn:aws:logs:*:*:log-group:*:*'
+  #       - PolicyName: cloudwatch-insights
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - logs:CreateLogGroup
+  #               Resource: '*'
+  #       - PolicyName: xray
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - xray:PutTraceSegments
+  #                 - xray:PutTelemetryRecords
+  #                 - xray:GetSamplingRules
+  #                 - xray:GetSamplingTargets
+  #                 - xray:GetSamplingStatisticSummaries
+  #               Resource: '*'
+  # Fn:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: ../src
+  #     Handler: fn.handler
+  #     Role: !GetAtt FnExecRole.Arn
+  # FnLogGroup:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub "/aws/lambda/${Fn}"
+  #     RetentionInDays: 7
+  # FnPerm:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !GetAtt Fn.Arn
+  #     Principal: apigateway.amazonaws.com
+  #     Action: lambda:InvokeFunction
+  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
+Outputs:
+  outApi:
+    Value: !Ref Api
+  outApiUrl:
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${apiStage}'
+  # outFn:
+  #   Value: !Ref Fn
