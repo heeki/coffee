@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Unicorn Coffee APIGW for X
+Description: Template API Gateway endpoint
 Transform: AWS::Serverless-2016-10-31
 Globals:
   Api:
@@ -7,42 +7,57 @@ Globals:
   Function:
     Runtime: python3.8
     Timeout: 60
+    Layers:
+      - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:18'
 Parameters:
-  certificateArn:
+  pCertificateArn:
     Type: String
-  domainName:
+  pDomainName:
     Type: String
-  hostedZoneId:
+  pHostedZoneId:
     Type: String
-  apiStage:
+  pApiStage:
     Type: String
-  swaggerBucket:
+  pOpenapiBucket:
     Type: String
-  swaggerKey:
+  pOpenapiKeyHttp:
+    Type: String
+  pOpenapiKeyRest:
     Type: String
 Resources:
   # APIGW
-  ExampleApi:
+  ApiHttp:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: !Ref apiStage
+      StageName: !Ref pApiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: !Sub 's3://${swaggerBucket}/${swaggerKey}'
-  ExampleApiMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
+            Location: !Sub 's3://${pOpenapiBucket}/${pOpenapiKeyHttp}'
+  ApiRest:
+    Type: AWS::Serverless::Api
     Properties:
-      ApiId: !Ref ExampleApi
-      ApiMappingKey: customer
-      DomainName: !Ref domainName
-      Stage: !Ref apiStage
-    DependsOn:
-      - ExampleApiStage
+      StageName: !Ref pApiStage
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub 's3://${pOpenapiBucket}/${pOpenapiKeyRest}'
+
+  # Domain
+  # ApiMapping:
+  #   Type: AWS::ApiGatewayV2::ApiMapping
+  #   Properties:
+  #     ApiId: !Ref ApiHttp
+  #     ApiMappingKey: template
+  #     DomainName: !Ref pDomainName
+  #     Stage: !Ref pApiStage
+  #   DependsOn:
+  #     - ApiHttpStage
 
   # Lambda
-  ExampleExecRole:
+  ExecRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -67,28 +82,39 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Resource: 'arn:aws:logs:*:*:log-group:*:*'
-  ExampleFn:
+  Fn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../src
       Handler: lambda.handler
-      Role: !GetAtt ExampleExecRole.Arn
-      Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:2'
-  ExampleLogGroupFn:
+      Role: !GetAtt ExecRole.Arn
+  LogGroupFn:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${ExampleFn}"
+      LogGroupName: !Sub "/aws/lambda/${Fn}"
       RetentionInDays: 7
-  ExamplePermFn:
+  PermFnHttp:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt ExampleFn.Arn
+      FunctionName: !GetAtt Fn.Arn
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ExampleApi}/*/*/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiHttp}/*/*/*'
+  PermFnRest:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Fn.Arn
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiRest}/*/*/*'
 Outputs:
-  exampleApi:
-    Value: !Ref ExampleApi
-  exampleFn:
-    Value: !Ref ExampleFn
+  outApiHttp:
+    Value: !Ref ApiHttp
+  outApiHttpUrl:
+    Value: !Sub 'https://${ApiHttp}.execute-api.${AWS::Region}.amazonaws.com/${pApiStage}'
+  outApiRest:
+    Value: !Ref ApiRest
+  outApiRestUrl:
+    Value: !Sub 'https://${ApiRest}.execute-api.${AWS::Region}.amazonaws.com/${pApiStage}'
+  outFn:
+    Value: !Ref Fn

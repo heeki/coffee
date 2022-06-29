@@ -1,0 +1,5 @@
+# directories
+tmp
+
+# files
+iac/*_output.yaml

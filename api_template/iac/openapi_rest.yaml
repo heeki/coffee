@@ -1,0 +1,236 @@
+openapi: 3.0.1
+info:
+  title: unicorn-api-template
+  description: Unicorn Coffee API template
+  version: 0.1.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+components:
+  schemas:
+    error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      example:
+        code: 500
+        message: 'unable to retrieve message'
+    customer:
+      type: object
+      properties:
+        id:
+          type: string
+        given_name:
+          type: string
+        family_name:
+          type: string
+        birthdate:
+          type: string
+        email:
+          type: string
+        phone_number:
+          type: string
+        phone_number_verified:
+          type: boolean
+      example:
+        id: 100
+        given_name: john
+        family_name: doe
+        birthdate: '1900-01-01'
+        email: 'john.doe@acme.com'
+        phone_number: '555-555-5555'
+        phone_number_verified: true
+    customers:
+      type: array
+      items:
+        $ref: '#/components/schemas/customer'
+    uid:
+      type: object
+      properties:
+        uid:
+          type: string
+      example:
+        uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
+  responses:
+    error:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            code: 500
+            message: 'unable to retrieve message'
+
+paths:
+  /:
+    get:
+      summary: customer
+      description: returns list of customers
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customers'
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    post:
+      summary: customer
+      description: create customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customer'
+            examples:
+              acme:
+                value:
+                  uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
+                  name: 'Acme'
+                  email: 'contact@acme.com'
+              hooli:
+                value:
+                  uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
+                  name: 'Hooli'
+                  email: 'contact@hooli.com'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+  /{uid}:
+    get:
+      summary: customer
+      description: returns customer details
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: customer id
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    post:
+      summary: customer
+      description: update customer
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customer'
+            examples:
+              acme:
+                value:
+                  uid: 'eac9f980-8180-49d8-836c-c01386bc94cf'
+                  name: 'Acme'
+                  email: 'contact@acme.com'
+              hooli:
+                value:
+                  uid: 'c92d40d1-5391-4c48-9f7e-51091cd9e551'
+                  name: 'Hooli'
+                  email: 'contact@hooli.com'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
+    delete:
+      summary: customer
+      description: deletes customer
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: customer id
+      responses:
+        200:
+          description: ok
+        500:
+          $ref: '#/components/responses/error'
+        default:
+          $ref: '#/components/responses/error'
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: 2.0
+        responses:
+          default:
+            statusCode: 200
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn.Arn}/invocations'
